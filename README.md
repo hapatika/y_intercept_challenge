@@ -1,3 +1,29 @@
+**Update after challenge ended (17 March)** 
+After contemplation, I realised why volume and price data would be the right indicator. I apologise for my oversight, and if you would like to consider it, below is the amended code (I did the same thing as before, but with the correct data). I understand that this may not be considered, however I just wanted to correct my oversight. 
+```
+January_Prices = last[last['date'].str.contains('2021-01')]
+January_Prices['weight'] = mkt_cap['weight'].where(mkt_cap['date'].str.contains('2021-01'))
+January_Prices['volume'] = volume[volume['date'].str.contains('2021-01')]
+January_Prices['amt'] = January_Prices['last']*January_Prices['volume']
+
+January_Prices["shifted"] = January_Prices.groupby('ticker')['last'].shift(1)
+January_Prices['shifted_vol'] = January_Prices.groupby('ticker')['volume'].shift(1)
+January_Prices['shifted_amt'] = January_Prices['shifted']*January_Prices['shifted_vol']
+
+January_Prices["idx_move"] = (January_Prices['shifted_amt'] - January_Prices['amt'])*January_Prices['weight']
+
+
+contributors = {'date' : [], 'positive' : [], 'negative' : [] }
+
+for date in January_Prices['date'].unique():
+  top_pos_cont = January_Prices.loc[January_Prices['date'] == date].sort_values('idx_move', ascending=False).head(5)
+  top_neg_cont = January_Prices.loc[January_Prices['date'] == date].sort_values('idx_move', ascending=True).head(5)
+  contributors['date'].append(date)
+  contributors['positive'].append(top_pos_cont)
+  contributors['negative'].append(top_neg_cont)
+```
+
+
 Points to note : 
 
 1. I used Google Colab for the challenge, hence the drive mount and Colab-speciifc imports at the start. Please ignore the data comprehension part, it is simply some preliminary analysis.
